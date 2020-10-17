@@ -37,16 +37,10 @@ void AMN2Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void AMN2Player::MoveUpDown(float delta)
 {
-	if (Controller && abs(delta) > std::numeric_limits<float>::epsilon())
-	{
-		AddMovementInput(GetActorForwardVector(), delta);
-	}
+	
 }
 
 void AMN2Player::MoveLeftRight(float delta)
 {
-	if (Controller && abs(delta) > std::numeric_limits<float>::epsilon())
-	{
-		AddMovementInput(GetActorRightVector(), delta);
-	}
+	
 }
