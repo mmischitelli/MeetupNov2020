@@ -19,15 +19,14 @@ class MEETUPNOV2020_API AMN2GameMode : public AGameMode
     int m_NumKilledEnemies = 0;
     int m_CurrentScore = 0;
     int m_HighScore = 0;
-
-    UUserWidget* m_MainHUD;
-    UUserWidget* m_GameOverWidget;
 public:
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MN2|Audio", meta=(DisplayName="GameSoundtrack"))
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "MN2|UI", meta = (DisplayName = "MainHUD"))
+    UUserWidget* m_MainHUD;
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "MN2|UI", meta = (DisplayName = "GameOverWidget"))
+    UUserWidget* m_GameOverWidget;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Audio", meta = (DisplayName = "GameSoundtrack"))
     USoundBase* m_GameSoundtrack;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Tracking", meta=(ClampMin = "2", ClampMax = "20"))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Tracking", meta = (ClampMin = "2", ClampMax = "20"))
     int MaxNumOfEnemies;
 
     UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
@@ -56,6 +55,6 @@ public:
         void DecrementNumOfEnemies() { --m_EnemyCount; }
     UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
         void IncrementNumOfEnemiesKilled() { ++m_NumKilledEnemies; DecrementNumOfEnemies(); }
-    UFUNCTION(BlueprintCallable, Category = "MN2|GUI")
+    UFUNCTION(BlueprintCallable, Category = "MN2|UI")
         void ShowGameOverScreen();
 };

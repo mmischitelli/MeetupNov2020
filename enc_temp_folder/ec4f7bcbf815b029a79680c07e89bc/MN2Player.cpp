@@ -134,7 +134,7 @@ void AMN2Player::OnFirePrimaryAction()
 
 		if (m_PrimaryFireSound != nullptr)
 		{
-			const float volumeMultiplier = 1.0f / primaryGuns.Num();
+			const float volumeMultiplier = 1 / primaryGuns.Num();
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_PrimaryFireSound, gunLocation, volumeMultiplier);
 		}
 	}
@@ -166,7 +166,7 @@ void AMN2Player::OnFireSecondaryAction()
 
 		if (m_SecondaryFireSound != nullptr)
 		{
-			const float volumeMultiplier = 1.0f / secondaryGuns.Num();
+			const float volumeMultiplier = 1 / secondaryGuns.Num();
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_SecondaryFireSound, gunLocation, volumeMultiplier);
 		}
     }
@@ -192,7 +192,7 @@ void AMN2Player::OnBoxCollisionHit(UPrimitiveComponent* HitComponent, AActor* Ot
 {
 	// Bounce against walls
 	if(IsValid(OtherActor) && OtherActor->ActorHasTag(TEXT("Bouncy"))) {
-		m_CurrentMovementSpeed = FVector2D{ -Hit.Normal.Y, -Hit.Normal.Z } * m_CurrentMovementSpeed * m_kBounceFactor;
+		m_CurrentMovementSpeed = FVector2D{ Hit.Normal.Y, Hit.Normal.Z } * m_CurrentMovementSpeed * m_kBounceFactor;
 	}
 }
 
