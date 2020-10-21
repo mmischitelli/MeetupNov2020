@@ -73,13 +73,16 @@ class MEETUPNOV2020_API AMN2EnemyBase : public AActor
 
 public:	
 	AMN2EnemyBase();
+	virtual void Tick(float DeltaTime) override;
+
+	void StartFiring();
+	void StopFiring();
+
+	float GetEngagementDistance() const { return m_EngagementDistance; }
 
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
-
-public:	
-	virtual void Tick(float DeltaTime) override;
 
 private:
 	UFUNCTION()

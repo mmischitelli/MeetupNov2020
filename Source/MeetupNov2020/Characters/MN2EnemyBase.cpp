@@ -1,7 +1,7 @@
 #include "MN2EnemyBase.h"
-#include "MN2GameMode.h"
 #include "MN2Player.h"
-#include "ProjectileEnemyBase.h"
+#include "MeetupNov2020/MN2GameMode.h"
+#include "MeetupNov2020/Projectiles/ProjectileEnemyBase.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -49,9 +49,6 @@ void AMN2EnemyBase::BeginPlay()
 		m_GameMode->IncrementNumOfEnemies();
 	}
 
-	FTimerHandle gunLogic;
-	GetWorldTimerManager().SetTimer(gunLogic, this, &AMN2EnemyBase::AI_GunLogic, 0.1f, true, 0);
-
 	m_MovementDirection = static_cast<EMovementDirection>(UKismetMathLibrary::RandomIntegerInRange(0, 1));
 	m_CurrentMovementSpeed = UKismetMathLibrary::RandomFloatInRange(m_MinMovementSpeed, m_MaxMovementSpeed);
 	m_SpawnLocation = GetActorLocation();
@@ -69,6 +66,20 @@ void AMN2EnemyBase::Tick(float DeltaTime)
 	const auto movementVector = FVector{ .0f, movementMagnitude, .0f };
 
 	AddActorWorldOffset(movementVector, true);
+}
+
+void AMN2EnemyBase::StartFiring()
+{
+	if (!m_FireActionRepeat.IsValid()) {
+		GetWorldTimerManager().SetTimer(m_FireActionRepeat, this, &AMN2EnemyBase::OnFireAction, m_FireRate, true, 0);
+	}
+}
+
+void AMN2EnemyBase::StopFiring()
+{
+	if (m_FireActionRepeat.IsValid()) {
+		GetWorldTimerManager().ClearTimer(m_FireActionRepeat);
+	}
 }
 
 void AMN2EnemyBase::_PlayGunfire() const
@@ -152,7 +163,9 @@ void AMN2EnemyBase::OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, 
 }
 
 void AMN2EnemyBase::AI_GunLogic()
-{	
+{
+	return;
+	
 	const auto player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (!IsValid(player))
 		return;

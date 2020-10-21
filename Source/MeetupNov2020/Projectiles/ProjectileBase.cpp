@@ -21,7 +21,6 @@ void AProjectileBase::OnConstruction(const FTransform& Transform)
 		const auto rootMeshComp = static_cast<UStaticMeshComponent*>(actorComp);
 		rootMeshComp->SetWorldScale3D(m_Scale);
 		rootMeshComp->SetEnableGravity(false);
-		//rootMeshComp->OnComponentHit.AddDynamic(this, &AProjectileBase::OnProjectileHitDelegate);
 		rootMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnProjectileOverlapsDelegate);
 
 		m_Material = rootMeshComp->CreateDynamicMaterialInstance(0);
@@ -30,20 +29,6 @@ void AProjectileBase::OnConstruction(const FTransform& Transform)
 		m_ProjectileMovementComp->MaxSpeed = m_Speed;
 		m_ProjectileMovementComp->InitialSpeed = m_Speed;
 	}
-}
-
-
-void AProjectileBase::OnProjectileHitDelegate_Impl(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	// Prevent self damage
-	if (GetInstigator() != nullptr && OtherActor == GetInstigator())
-	{
-		GetWorld()->DestroyActor(this);
-		return;
-	}
-
-	UGameplayStatics::ApplyDamage(OtherActor, m_Damage, GetInstigatorController(), this, nullptr);
-	GetWorld()->DestroyActor(this);
 }
 
 void AProjectileBase::OnProjectileOverlapsDelegate_Impl(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

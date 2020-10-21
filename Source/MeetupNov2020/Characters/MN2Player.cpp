@@ -1,6 +1,6 @@
 #include "MN2Player.h"
-#include "MN2GameMode.h"
-#include "ProjectilePlayerBase.h"
+#include "MeetupNov2020/MN2GameMode.h"
+#include "MeetupNov2020/Projectiles/ProjectilePlayerBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"

@@ -1,6 +1,7 @@
 #include "MN2GameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Subsystems/EnemyAILogicSubsystem.h"
 
 void AMN2GameMode::BeginPlay()
 {
@@ -19,11 +20,15 @@ void AMN2GameMode::BeginPlay()
     if (m_GameSoundtrack != nullptr) {
         UGameplayStatics::PlaySound2D(GetWorld(), m_GameSoundtrack);
     }
+
+    GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Start();
 }
 
 
 void AMN2GameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Stop();
+	
     SaveScore();
 }
 
