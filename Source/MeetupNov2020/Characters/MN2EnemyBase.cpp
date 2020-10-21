@@ -161,25 +161,3 @@ void AMN2EnemyBase::OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, 
 		GetWorld()->DestroyActor(this);
 	}
 }
-
-void AMN2EnemyBase::AI_GunLogic()
-{
-	return;
-	
-	const auto player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (!IsValid(player))
-		return;
-	
-	if (abs(player->GetActorLocation().Y - GetActorLocation().Y) <= m_EngagementDistance)
-	{
-		if (!m_FireActionRepeat.IsValid()) {
-			GetWorldTimerManager().SetTimer(m_FireActionRepeat, this, &AMN2EnemyBase::OnFireAction, m_FireRate, true, 0);
-		}
-	}
-	else
-	{
-		if (m_FireActionRepeat.IsValid()) {
-			GetWorldTimerManager().ClearTimer(m_FireActionRepeat);
-		}
-	}
-}

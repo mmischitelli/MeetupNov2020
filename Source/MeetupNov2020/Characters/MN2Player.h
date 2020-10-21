@@ -66,6 +66,9 @@ class MEETUPNOV2020_API AMN2Player : public APawn
     FTimerDelegate m_OnPrimaryActionDelegate;
 	FTimerDelegate m_OnSecondaryActionDelegate;
 
+	bool m_ShouldStopPrimaryAction;
+	bool m_ShouldStopSecondaryAction;
+
 public:	
 	AMN2Player();
 

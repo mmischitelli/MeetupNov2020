@@ -97,9 +97,6 @@ private:
 	UFUNCTION()
 		void OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
-	UFUNCTION()
-		void AI_GunLogic();
-
 	void _FireProjectile() const;
 	void _PlayGunfire() const;
 

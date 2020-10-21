@@ -5,6 +5,7 @@
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MeetupNov2020/Subsystems/EnemyAILogicSubsystem.h"
 
 AMN2Player::AMN2Player()
     : m_kBounceFactor(3.0f)
@@ -13,6 +14,8 @@ AMN2Player::AMN2Player()
     , m_kMovementDriftInterpSpeed(10.0f)
 {
     PrimaryActorTick.bCanEverTick = true;
+	m_ShouldStopPrimaryAction = false;
+	m_ShouldStopSecondaryAction = false;
 
 	m_AnimationTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AnimationTimeline"));
 
@@ -106,6 +109,7 @@ void AMN2Player::MoveLeftRight(float delta)
 
 void AMN2Player::FirePrimary()
 {
+	m_ShouldStopPrimaryAction = false;
 	if (!m_CanMove || m_PrimaryActionRepeat.IsValid())
 		return;
 
@@ -114,11 +118,17 @@ void AMN2Player::FirePrimary()
 
 void AMN2Player::ReleasePrimary()
 {
-	GetWorldTimerManager().ClearTimer(m_PrimaryActionRepeat);
+	m_ShouldStopPrimaryAction = true;
 }
 
 void AMN2Player::OnFirePrimaryAction()
 {
+	if (m_ShouldStopPrimaryAction)
+	{
+		GetWorldTimerManager().ClearTimer(m_PrimaryActionRepeat);
+		return;
+	}
+	
 	const auto primaryGuns = GetComponentsByTag(USceneComponent::StaticClass(), "PrimaryFireSpawnLoc");
 	for (UActorComponent* const gun : primaryGuns)
 	{
@@ -138,6 +148,7 @@ void AMN2Player::OnFirePrimaryAction()
 
 void AMN2Player::FireSecondary()
 {
+	m_ShouldStopSecondaryAction = false;
 	if (!m_CanMove || m_SecondaryActionRepeat.IsValid())
 		return;
 
@@ -146,11 +157,17 @@ void AMN2Player::FireSecondary()
 
 void AMN2Player::ReleaseSecondary()
 {
-	GetWorldTimerManager().ClearTimer(m_SecondaryActionRepeat);
+	m_ShouldStopSecondaryAction = true;
 }
 
 void AMN2Player::OnFireSecondaryAction()
 {
+	if (m_ShouldStopSecondaryAction)
+	{
+		GetWorldTimerManager().ClearTimer(m_SecondaryActionRepeat);
+		return;
+	}
+	
 	const auto secondaryGuns = GetComponentsByTag(USceneComponent::StaticClass(), "SecondaryFireSpawnLoc");
     for (UActorComponent* const gun : secondaryGuns)
     {
@@ -188,7 +205,7 @@ void AMN2Player::OnBoxCollisionHit(UPrimitiveComponent* HitComponent, AActor* Ot
 {
 	// Bounce against walls
 	if(IsValid(OtherActor) && OtherActor->ActorHasTag(TEXT("Bouncy"))) {
-		m_CurrentMovementSpeed = FVector2D{ -Hit.Normal.Y, -Hit.Normal.Z } * m_CurrentMovementSpeed * m_kBounceFactor;
+		m_CurrentMovementSpeed = FVector2D{ Hit.Normal.Y, Hit.Normal.Z } * UKismetMathLibrary::GetAbs2D(m_CurrentMovementSpeed) * m_kBounceFactor;
 	}
 }
 
@@ -203,6 +220,8 @@ void AMN2Player::OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, con
 	m_Health = UKismetMathLibrary::FClamp(m_Health - Damage, 0, m_MaxHealth);
 	if (m_Health <= .0f)
 	{
+		GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Stop();
+
 		if (m_DeathEmitter) {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_DeathEmitter, GetActorLocation());
 		}

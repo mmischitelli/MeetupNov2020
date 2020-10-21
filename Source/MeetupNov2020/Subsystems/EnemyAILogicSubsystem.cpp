@@ -14,6 +14,15 @@ void UEnemyAILogicSubsystem::Start()
 void UEnemyAILogicSubsystem::Stop()
 {
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+
+	// Make all enemies stop firing when the AI logic is stopped
+	for (TActorIterator<AMN2EnemyBase> Itr(GetWorld()); Itr; ++Itr)
+	{
+		auto* enemy = *Itr;
+		if (IsValid(enemy)) {
+			enemy->StopFiring();
+		}
+	}
 }
 
 void UEnemyAILogicSubsystem::EnemyFireLogic() const
