@@ -1,10 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MN2Player.h"
-
-
-
+#include "MN2GameMode.h"
 #include "ProjectilePlayerBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
@@ -36,6 +31,8 @@ AMN2Player::AMN2Player()
 
 void AMN2Player::OnConstruction(const FTransform& Transform)
 {
+	Super::OnConstruction(Transform);
+
 	m_Health = m_MaxHealth;
 	m_CanMove = false;
 	m_SpawnLocation = Transform.GetLocation();
@@ -46,8 +43,7 @@ void AMN2Player::OnConstruction(const FTransform& Transform)
 	}
 
 	const auto boxComp = static_cast<UBoxComponent*>(RootComponent);
-	if (boxComp)
-	{
+	if (boxComp) {
 		boxComp->OnComponentHit.AddDynamic(this, &AMN2Player::OnBoxCollisionHit);
 	}
 
@@ -110,7 +106,7 @@ void AMN2Player::MoveLeftRight(float delta)
 
 void AMN2Player::FirePrimary()
 {
-	if (!m_CanMove)
+	if (!m_CanMove || m_PrimaryActionRepeat.IsValid())
 		return;
 
 	GetWorldTimerManager().SetTimer(m_PrimaryActionRepeat, m_OnPrimaryActionDelegate, m_FireRate, true, 0);
@@ -142,7 +138,7 @@ void AMN2Player::OnFirePrimaryAction()
 
 void AMN2Player::FireSecondary()
 {
-	if (!m_CanMove)
+	if (!m_CanMove || m_SecondaryActionRepeat.IsValid())
 		return;
 
 	GetWorldTimerManager().SetTimer(m_SecondaryActionRepeat, m_OnSecondaryActionDelegate, m_FireRate, true, 0);
