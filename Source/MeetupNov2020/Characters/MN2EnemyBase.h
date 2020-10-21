@@ -20,7 +20,7 @@ class MEETUPNOV2020_API AMN2EnemyBase : public AActor
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "MN2|Stats", meta = (DisplayName = "CurrentHealth", AllowPrivateAccess = true))
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "MN2|Stats", meta = (DisplayName = "CurrentHealth", AllowPrivateAccess = true))
 		float m_Health;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Stats", meta = (DisplayName = "MaximumHealth", AllowPrivateAccess = true, ClampMin = "0", ClampMax = "200"))
 		float m_MaxHealth;
