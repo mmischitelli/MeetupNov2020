@@ -1,6 +1,7 @@
 #include "MN2GameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Serialization/BufferArchive.h"
 #include "Subsystems/EnemyAILogicSubsystem.h"
 
 void AMN2GameMode::BeginPlay()
@@ -27,17 +28,32 @@ void AMN2GameMode::BeginPlay()
 
 void AMN2GameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Stop();
-	
-    SaveScore();
+    GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Stop();	
 }
 
 void AMN2GameMode::LoadScore()
 {
+    FBufferArchive fromBinary;
+    FFileHelper::LoadFileToArray(fromBinary, L"history");
+
+    if (fromBinary.TotalSize() <= 0)
+        return;
+
+    FSaveGameData saveGameData;
+    FMemoryReader reader(fromBinary);
+    reader << saveGameData;
+
+    m_HighScore = saveGameData.HighScore;
 }
 
 void AMN2GameMode::SaveScore()
 {
+    FSaveGameData saveGameData { m_HighScore };
+
+    FBufferArchive toBinary;
+    toBinary << saveGameData;
+
+    FFileHelper::SaveArrayToFile(toBinary, L"history");
 }
 
 void AMN2GameMode::IncrementScoreBy(int amount)
@@ -49,6 +65,8 @@ void AMN2GameMode::IncrementScoreBy(int amount)
 
 void AMN2GameMode::ShowGameOverScreen()
 {
+    SaveScore();
+
     const FStringClassReference gameOverWidgetRef(TEXT("WidgetBlueprint'/Game/Blueprints/UI/BPW_GameOver.BPW_GameOver_C'"));
     if (UClass* gameOverWidget = gameOverWidgetRef.TryLoadClass<UUserWidget>())
     {

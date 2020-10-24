@@ -7,6 +7,17 @@
 class UUserWidget;
 class USoundBase;
 
+struct FSaveGameData
+{
+    int HighScore;
+	
+	friend FArchive& operator<<(FArchive& Ar, FSaveGameData& data)
+	{
+		Ar << data.HighScore;
+		return Ar;
+	}
+};
+
 /**
  *
  */
