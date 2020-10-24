@@ -24,6 +24,7 @@ void AMN2Asteroid::OnConstruction(const FTransform& Transform)
 
 	m_Health = m_MaxHealth;
 	m_SpawnLocation = Transform.GetLocation();
+	m_CurrentMovementSpeed = UKismetMathLibrary::RandomFloatInRange(m_MinMovementSpeed, m_MaxMovementSpeed);
 	
 	const auto objComp = GetComponentByClass(UStaticMeshComponent::StaticClass());
 	if (objComp)
@@ -64,8 +65,13 @@ void AMN2Asteroid::OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, c
 		const auto gameMode = UGameplayStatics::GetGameMode(GetWorld());
 		if (gameMode)
 		{
+			if (m_DeathEmitter) {
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_DeathEmitter, GetActorLocation());
+			}
+			if (m_DeathSound) {
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_DeathSound, GetActorLocation());
+			}
 			const auto mn2GameMode = static_cast<AMN2GameMode*>(gameMode);
-			mn2GameMode->DecrementNumOfEnemies();
 			mn2GameMode->IncrementScoreBy(m_ScoreValue);
 		}
 		GetWorld()->DestroyActor(this);

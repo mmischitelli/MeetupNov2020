@@ -23,6 +23,8 @@ class MEETUPNOV2020_API AMN2Asteroid : public AActor
 		float m_MaxMovementSpeed;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Geometry", meta = (DisplayName = "ObjectScale", AllowPrivateAccess = true))
 		FVector m_Scale;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Audio", meta = (DisplayName = "DeathSound", AllowPrivateAccess = true))
+		class USoundBase* m_DeathSound;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Particles", meta = (DisplayName = "ParticlesOnDeath", AllowPrivateAccess = true))
 		class UParticleSystem* m_DeathEmitter;
 
