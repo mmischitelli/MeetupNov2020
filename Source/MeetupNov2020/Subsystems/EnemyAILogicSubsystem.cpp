@@ -1,7 +1,7 @@
 #include "EnemyAILogicSubsystem.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
-#include "MeetupNov2020/Characters/MN2EnemyBase.h"
+#include "MeetupNov2020/Characters/MN2EnemyShip.h"
 #include "MeetupNov2020/Characters/MN2Player.h"
 
 
@@ -16,7 +16,7 @@ void UEnemyAILogicSubsystem::Stop()
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
 	// Make all enemies stop firing when the AI logic is stopped
-	for (TActorIterator<AMN2EnemyBase> Itr(GetWorld()); Itr; ++Itr)
+	for (TActorIterator<AMN2EnemyShip> Itr(GetWorld()); Itr; ++Itr)
 	{
 		auto* enemy = *Itr;
 		if (IsValid(enemy)) {
@@ -31,7 +31,7 @@ void UEnemyAILogicSubsystem::EnemyFireLogic() const
 	if (!IsValid(player))
 		return;
 
-	for(TActorIterator<AMN2EnemyBase> Itr(GetWorld()); Itr; ++Itr)
+	for(TActorIterator<AMN2EnemyShip> Itr(GetWorld()); Itr; ++Itr)
 	{
 		auto* enemy = *Itr;
 		if (!IsValid(enemy))

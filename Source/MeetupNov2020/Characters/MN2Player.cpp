@@ -1,11 +1,10 @@
 #include "MN2Player.h"
-#include "MeetupNov2020/MN2GameMode.h"
+#include "MeetupNov2020/MN2GameModeBase.h"
 #include "MeetupNov2020/Projectiles/ProjectilePlayerBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "MeetupNov2020/Subsystems/EnemyAILogicSubsystem.h"
 
 AMN2Player::AMN2Player()
     : m_kBounceFactor(3.0f)
@@ -60,11 +59,6 @@ void AMN2Player::OnConstruction(const FTransform& Transform)
 void AMN2Player::BeginPlay()
 {
 	Super::BeginPlay();
-
-	const auto gameMode = UGameplayStatics::GetGameMode(GetWorld());
-	if (gameMode) {
-		m_GameMode = static_cast<AMN2GameMode*>(gameMode);
-	}
 
 	m_Yaw = GetActorRotation().Yaw;
 	m_AnimationTimeline->PlayFromStart();
@@ -220,15 +214,14 @@ void AMN2Player::OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, con
 	m_Health = UKismetMathLibrary::FClamp(m_Health - Damage, 0, m_MaxHealth);
 	if (m_Health <= .0f)
 	{
-		GetWorld()->GetSubsystem<UEnemyAILogicSubsystem>()->Stop();
-
 		if (m_DeathEmitter) {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_DeathEmitter, GetActorLocation());
 		}
 		if (m_DeathSound) {
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_DeathSound, GetActorLocation());
 		}
-		m_GameMode->ShowGameOverScreen();
+
+		static_cast<AMN2GameModeBase*>(UGameplayStatics::GetGameMode(GetWorld()))->ShowGameOverScreen();
 		GetWorld()->DestroyActor(this);
 	}
 }

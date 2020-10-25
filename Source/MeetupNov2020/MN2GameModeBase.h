@@ -1,44 +1,55 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameMode.h"
-#include "MN2GameMode.generated.h"
+#include "GameFramework/GameModeBase.h"
+#include "MN2GameModeBase.generated.h"
 
-class UUserWidget;
-class USoundBase;
+class ATriggerBox;
+struct FEnemySpawnedEventArgs;
+struct FEnemyKilledEventArgs;
 
 struct FSaveGameData
 {
     int HighScore;
-	
-	friend FArchive& operator<<(FArchive& Ar, FSaveGameData& data)
-	{
-		Ar << data.HighScore;
-		return Ar;
-	}
+
+    friend FArchive& operator<<(FArchive& Ar, FSaveGameData& data)
+    {
+        Ar << data.HighScore;
+        return Ar;
+    }
 };
 
 /**
- *
+ * 
  */
 UCLASS()
-class MEETUPNOV2020_API AMN2GameMode : public AGameMode
+class MEETUPNOV2020_API AMN2GameModeBase : public AGameModeBase
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Spawn|Classes", meta = (DisplayName = "HealthGlobe", AllowPrivateAccess = true))
+        class TSubclassOf<AActor> m_HealthGlobe;
+	
+protected:
     int m_EnemyCount = 0;
     int m_NumKilledEnemies = 0;
     int m_CurrentScore = 0;
     int m_HighScore = 0;
+
 public:
+
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    void RegisterEnemyEvents(class AMN2EnemyBase* enemy);
+
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "MN2|UI", meta = (DisplayName = "MainHUD"))
-    UUserWidget* m_MainHUD;
+        class UUserWidget* m_MainHUD;
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "MN2|UI", meta = (DisplayName = "GameOverWidget"))
-    UUserWidget* m_GameOverWidget;
+        class UUserWidget* m_GameOverWidget;
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Audio", meta = (DisplayName = "GameSoundtrack"))
-    USoundBase* m_GameSoundtrack;
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MN2|Tracking", meta = (ClampMin = "2", ClampMax = "20"))
-    int MaxNumOfEnemies;
+        class USoundBase* m_GameSoundtrack;
 
     UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
         int GetCurrentEnemyCount() const { return m_EnemyCount; }
@@ -51,21 +62,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "MN2|GUI")
         UUserWidget* GetHUD() const { return m_MainHUD; }
 
-    virtual void BeginPlay() override;
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-    UFUNCTION(BlueprintCallable, Category="MN2|Score")
+    UFUNCTION(BlueprintCallable, Category = "MN2|Score")
         void LoadScore();
     UFUNCTION(BlueprintCallable, Category = "MN2|Score")
         void SaveScore();
-    UFUNCTION(BlueprintCallable, Category = "MN2|Score")
-        void IncrementScoreBy(int amount);
-    UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
-        void IncrementNumOfEnemies() { ++m_EnemyCount; }
-    UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
-        void DecrementNumOfEnemies() { --m_EnemyCount; }
-    UFUNCTION(BlueprintCallable, Category = "MN2|Tracking")
-        void IncrementNumOfEnemiesKilled() { ++m_NumKilledEnemies; DecrementNumOfEnemies(); }
     UFUNCTION(BlueprintCallable, Category = "MN2|UI")
         void ShowGameOverScreen();
+
+    virtual void OnEnemySpawnedAction(FEnemySpawnedEventArgs args);
+    virtual void OnEnemyKilledAction(FEnemyKilledEventArgs args);
+
+protected:
+    static FVector GetRandomPointInSpawnZone(ATriggerBox* spawnZone);
+	
 };

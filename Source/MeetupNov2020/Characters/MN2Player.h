@@ -55,7 +55,6 @@ class MEETUPNOV2020_API AMN2Player : public APawn
 	const float m_kYawLeanOnMovement=.0f;
 	const float m_kYawLeanInterpSpeed=.0f;
 	const float m_kMovementDriftInterpSpeed=.0f;
-	class AMN2GameMode* m_GameMode;
 	class UStaticMeshComponent* m_MeshRoot;
 
 	FOnTimelineFloat m_SpawnAnimationUpdateDelegate{};
@@ -71,15 +70,10 @@ class MEETUPNOV2020_API AMN2Player : public APawn
 
 public:	
 	AMN2Player();
-
-protected:
-
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
     virtual void BeginPlay() override;
-
-public:	
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	UFUNCTION()
