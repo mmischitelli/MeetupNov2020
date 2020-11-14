@@ -2,7 +2,6 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "MeetupNov2020/Characters/MN2EnemyShip.h"
-#include "MeetupNov2020/Characters/MN2Player.h"
 
 
 void UEnemyAILogicSubsystem::Start()

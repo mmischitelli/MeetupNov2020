@@ -1,5 +1,4 @@
 #include "MN2EnemyShip.h"
-#include "MN2Player.h"
 #include "MeetupNov2020/Projectiles/ProjectileEnemyBase.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"

@@ -5,6 +5,7 @@
 #include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MeetupNov2020/Utils/MN2RateLimitedAction.h"
 
 AMN2Player::AMN2Player()
     : m_kBounceFactor(3.0f)
@@ -13,8 +14,6 @@ AMN2Player::AMN2Player()
     , m_kMovementDriftInterpSpeed(10.0f)
 {
     PrimaryActorTick.bCanEverTick = true;
-	m_ShouldStopPrimaryAction = false;
-	m_ShouldStopSecondaryAction = false;
 
 	m_AnimationTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AnimationTimeline"));
 
@@ -23,12 +22,6 @@ AMN2Player::AMN2Player()
 
 	const auto finishFn = GET_FUNCTION_NAME_CHECKED(AMN2Player, OnSpawnAnimationFinish);
 	m_SpawnAnimationFinishDelegate.BindUFunction(this, finishFn);
-
-	const auto primaryActionFn = GET_FUNCTION_NAME_CHECKED(AMN2Player, OnFirePrimaryAction);
-	m_OnPrimaryActionDelegate.BindUFunction(this, primaryActionFn);
-
-	const auto secondaryActionFn = GET_FUNCTION_NAME_CHECKED(AMN2Player, OnFireSecondaryAction);
-	m_OnSecondaryActionDelegate.BindUFunction(this, secondaryActionFn);
 }
 
 void AMN2Player::OnConstruction(const FTransform& Transform)
@@ -38,6 +31,18 @@ void AMN2Player::OnConstruction(const FTransform& Transform)
 	m_Health = m_MaxHealth;
 	m_CanMove = false;
 	m_SpawnLocation = Transform.GetLocation();
+
+	m_PrimaryAction = NewObject<UMN2RateLimitedAction>(this);
+	m_PrimaryAction->SetRate(m_FireRate);
+	m_PrimaryAction->OnFireAction.AddWeakLambda(this, [&]() {
+		SpawnProjectile(m_PrimaryFireProjectile, m_PrimaryFireSound, "PrimaryFireSpawnLoc");
+	});
+
+	m_SecondaryAction = NewObject<UMN2RateLimitedAction>(this);
+	m_SecondaryAction->SetRate(m_FireRate);
+	m_SecondaryAction->OnFireAction.AddWeakLambda(this, [&]() {
+		SpawnProjectile(m_SecondaryFireProjectile, m_SecondaryFireSound, "SecondaryFireSpawnLoc");
+	});
 
 	const auto components = GetComponentsByTag(UStaticMeshComponent::StaticClass(), "MeshRoot");
 	if (components.Num() > 0) {
@@ -103,80 +108,47 @@ void AMN2Player::MoveLeftRight(float delta)
 
 void AMN2Player::FirePrimary()
 {
-	m_ShouldStopPrimaryAction = false;
-	if (!m_CanMove || m_PrimaryActionRepeat.IsValid())
+	if (!m_CanMove)
 		return;
 
-	GetWorldTimerManager().SetTimer(m_PrimaryActionRepeat, m_OnPrimaryActionDelegate, m_FireRate, true, 0);
+	m_PrimaryAction->Start(GetWorld());
 }
 
 void AMN2Player::ReleasePrimary()
 {
-	m_ShouldStopPrimaryAction = true;
-}
-
-void AMN2Player::OnFirePrimaryAction()
-{
-	if (m_ShouldStopPrimaryAction)
-	{
-		GetWorldTimerManager().ClearTimer(m_PrimaryActionRepeat);
-		return;
-	}
-	
-	const auto primaryGuns = GetComponentsByTag(USceneComponent::StaticClass(), "PrimaryFireSpawnLoc");
-	for (UActorComponent* const gun : primaryGuns)
-	{
-		FActorSpawnParameters params;
-		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		params.Instigator = this;
-		const auto gunLocation = static_cast<USceneComponent*>(gun)->GetComponentToWorld().GetLocation();
-		GetWorld()->SpawnActor<AProjectilePlayerBase>(m_PrimaryFireProjectile, gunLocation, FRotator::ZeroRotator, params);
-
-		if (m_PrimaryFireSound != nullptr)
-		{
-			const float volumeMultiplier = 1.0f / primaryGuns.Num();
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_PrimaryFireSound, gunLocation, volumeMultiplier);
-		}
-	}
+	m_PrimaryAction->Stop();
 }
 
 void AMN2Player::FireSecondary()
 {
-	m_ShouldStopSecondaryAction = false;
-	if (!m_CanMove || m_SecondaryActionRepeat.IsValid())
+	if (!m_CanMove)
 		return;
 
-	GetWorldTimerManager().SetTimer(m_SecondaryActionRepeat, m_OnSecondaryActionDelegate, m_FireRate, true, 0);
+	m_SecondaryAction->Start(GetWorld());
 }
 
 void AMN2Player::ReleaseSecondary()
 {
-	m_ShouldStopSecondaryAction = true;
+	m_SecondaryAction->Stop();
 }
 
-void AMN2Player::OnFireSecondaryAction()
+void AMN2Player::SpawnProjectile(TSubclassOf<AActor> actorToSpawn, USoundBase* soundFX, const FString& tag)
 {
-	if (m_ShouldStopSecondaryAction)
+	const auto guns = GetComponentsByTag(USceneComponent::StaticClass(), *tag);
+	for (UActorComponent* const gun : guns)
 	{
-		GetWorldTimerManager().ClearTimer(m_SecondaryActionRepeat);
-		return;
-	}
-	
-	const auto secondaryGuns = GetComponentsByTag(USceneComponent::StaticClass(), "SecondaryFireSpawnLoc");
-    for (UActorComponent* const gun : secondaryGuns)
-    {
 		FActorSpawnParameters params;
 		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		params.Instigator = this;
 		const auto gunLocation = static_cast<USceneComponent*>(gun)->GetComponentToWorld().GetLocation();
-		GetWorld()->SpawnActor<AProjectilePlayerBase>(m_SecondaryFireProjectile, gunLocation, FRotator::ZeroRotator, params);
+		GetWorld()->SpawnActor<AProjectilePlayerBase>(actorToSpawn, gunLocation, FRotator::ZeroRotator, params);
 
-		if (m_SecondaryFireSound != nullptr)
+		if (soundFX != nullptr)
 		{
-			const float volumeMultiplier = 1.0f / secondaryGuns.Num();
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), m_SecondaryFireSound, gunLocation, volumeMultiplier);
+			const float volumeMultiplier = 1.0f / guns.Num();
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), soundFX, gunLocation, volumeMultiplier);
 		}
-    }
+	}
 }
 
 void AMN2Player::OnSpawnAnimationUpdate(float delta)

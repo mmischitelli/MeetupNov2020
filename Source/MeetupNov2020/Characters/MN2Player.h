@@ -50,6 +50,11 @@ class MEETUPNOV2020_API AMN2Player : public APawn
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "MN2|Animations", meta = (DisplayName = "AnimationTimeline", AllowPrivateAccess = true))
 	    class UTimelineComponent* m_AnimationTimeline;
 
+	UPROPERTY()
+		class UMN2RateLimitedAction* m_PrimaryAction;
+	UPROPERTY()
+		class UMN2RateLimitedAction* m_SecondaryAction;
+
 	float m_DeltaSecs;
 	const float m_kBounceFactor=.0f;
 	const float m_kYawLeanOnMovement=.0f;
@@ -60,13 +65,6 @@ class MEETUPNOV2020_API AMN2Player : public APawn
 	FOnTimelineFloat m_SpawnAnimationUpdateDelegate{};
 	FOnTimelineEvent m_SpawnAnimationFinishDelegate{};
 
-	FTimerHandle m_PrimaryActionRepeat;
-	FTimerHandle m_SecondaryActionRepeat;
-    FTimerDelegate m_OnPrimaryActionDelegate;
-	FTimerDelegate m_OnSecondaryActionDelegate;
-
-	bool m_ShouldStopPrimaryAction;
-	bool m_ShouldStopSecondaryAction;
 
 public:	
 	AMN2Player();
@@ -85,13 +83,10 @@ private:
 	UFUNCTION()
 		void ReleasePrimary();
 	UFUNCTION()
-		void OnFirePrimaryAction();
-	UFUNCTION()
 		void FireSecondary();
 	UFUNCTION()
 		void ReleaseSecondary();
-	UFUNCTION()
-		void OnFireSecondaryAction();
+	
 	UFUNCTION()
 		void OnSpawnAnimationUpdate(float delta);
 	UFUNCTION()
@@ -102,5 +97,6 @@ private:
 	UFUNCTION()
 		void OnTakeAnyDamageDelegate(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	void SpawnProjectile(TSubclassOf<AActor> actorToSpawn, USoundBase* soundFX, const FString& tag);
 	float ComputeMovementAmount(float direction, float speed) const;
 };

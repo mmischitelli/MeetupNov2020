@@ -1,5 +1,4 @@
 #include "MN2EnemyBase.h"
-#include "MN2Player.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MeetupNov2020/MN2GameModeBase.h"
@@ -55,7 +54,8 @@ void AMN2EnemyBase::OnCollisionHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	}
 
 	// Self-destruct against player and do LOTS of damage
-	if (OtherActor->GetClass()->IsChildOf(AMN2Player::StaticClass()))
+	const auto playerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	if (OtherActor == playerPawn)
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, m_Health * .5f, nullptr, this, nullptr);
 		UGameplayStatics::ApplyDamage(this, TNumericLimits<float>::Max(), OtherActor->GetInstigatorController(), OtherActor, nullptr);
